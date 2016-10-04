@@ -19,8 +19,14 @@ LIBGCC 		:= $(shell $(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
 
 KBUILD_DEFCONFIG := defconfig
 
+# Will fall back to -march=armv8-a+crypto in case the compiler isn't compatible with -mcpu and -mtune
+# GCC 4.9 cannot use -mtune/mcpu=cortex-a72, so I use cortex-a57 since it has the same effect as cortex-a72 (reference: https://gcc.gnu.org/ml/gcc-patches/2015-02/msg00211.html)
+ARM_ARCH_OPT := -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
+DARKNESS_OPT_FLAGS := $(call cc-option,$(ARM_ARCH_OPT),-march=armv8-a+crypto)
+
 KBUILD_CFLAGS	+= -mgeneral-regs-only
 KBUILD_CFLAGS	+= -fno-pic
+KBUILD_CFLAGS	+= $(DARKNESS_OPT_FLAGS)
 ifeq ($(CONFIG_CPU_BIG_ENDIAN), y)
 KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
